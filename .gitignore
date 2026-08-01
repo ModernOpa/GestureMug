@@ -1,0 +1,49 @@
+# Виртуальное окружение
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+# Данные (если датасет большой — лучше не пушить в Git)
+data/
+*.zip
+*.tar.gz
+*.tar
+*.7z
+
+# Лог-файлы и временные
+logs/
+*.log
+tmp/
+temp/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Прочее
+.DS_Store
+Thumbs.db
