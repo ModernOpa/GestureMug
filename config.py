@@ -11,7 +11,7 @@ class VideoConfig:
 
 @dataclass(frozen=True)
 class YOLOConfig:
-    model_path: str = "data/neuroModels/yolov8s.pt"  # Рекомендуется s (small) версия для баланса точности/скорости
+    model_path: str = "data/neuro-models/yolov8s.pt"  # Рекомендуется s (small) версия для баланса точности/скорости
     confidence_threshold: float = 0.5
     device: str = "cuda"  # Задействуем твою RTX 5060 Ti через WSL2
     target_classes: tuple[int, ...] = (41,)  # ID класса 'cup' в датасете COCO
@@ -21,6 +21,7 @@ class MediaPipeConfig:
     max_num_hands: int = 1
     min_detection_confidence: float = 0.7
     min_tracking_confidence: float = 0.7
+    model_path: str = "data/hand-models/hand_landmarker.task"  # Путь к файлу модели
 
 @dataclass(frozen=True)
 class LogicConfig:

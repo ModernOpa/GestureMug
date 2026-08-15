@@ -1,5 +1,4 @@
-from typing import Any, Dict, List, cast
-import cv2
+from typing import Any, Dict, List
 import numpy as np
 import mediapipe as mp
 from interfaces.detector import IDetector
@@ -7,52 +6,67 @@ from config import config
 
 class HandDetector(IDetector):
     """
-    Реализация детектора ключевых точек руки на базе Google MediaPipe Hands.
-    Извлекает 21 трехмерную координату суставов кисти.
+    Реализация детектора ключевых точек руки на базе современного Google MediaPipe 1.x (Vision Tasks API).
+    Извлекает 21 нормализованную координату суставов кисти руки.
     """
     def __init__(self) -> None:
+        self._model_path: str = config.mediapipe.model_path
         self._max_hands: int = config.mediapipe.max_num_hands
         self._min_detection_conf: float = config.mediapipe.min_detection_confidence
         self._min_tracking_conf: float = config.mediapipe.min_tracking_confidence
-        
-        # Инициализация API MediaPipe
-        self._mp_hands = mp.solutions.hands
-        self._hands: Any = None
+        self._detector: Any = None
+
+
 
     def load_model(self) -> None:
-        """Инициализирует контекст MediaPipe Hands."""
-        self._hands = self._mp_hands.Hands(
-            static_image_mode=False,  # Оптимизировано для обработки видеопотока
-            max_num_hands=self._max_hands,
-            min_detection_confidence=self._min_detection_conf,
-            min_tracking_confidence=self._min_tracking_conf
+        """Инициализирует современный HandLandmarker из MediaPipe Tasks API."""
+        BaseOptions = mp.tasks.BaseOptions
+        HandLandmarker = mp.tasks.vision.HandLandmarker
+        HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+        RunningMode = mp.tasks.vision.RunningMode
+
+        # Настраиваем опции детектора для работы в режиме покадровой обработки видео (VIDEO)
+        options = HandLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=self._model_path),
+            running_mode=RunningMode.VIDEO,
+            num_hands=self._max_hands,
+            min_hand_detection_confidence=self._min_detection_conf,
+            min_hand_presence_confidence=self._min_tracking_conf
         )
-        print("[INFO] Модель MediaPipe Hands успешно инициализирована.")
+        
+        # Создаем экземпляр детектора
+        self._detector = HandLandmarker.create_from_options(options)
+        print("[INFO] Модель MediaPipe Hands 1.x (Tasks API) успешно инициализирована.")
 
     def process(self, frame: np.ndarray) -> Dict[str, Any]:
         """
-        Обрабатывает кадр и извлекает нормализованные координаты ключевых точек.
-        
-        :param frame: Исходный кадр в формате BGR (OpenCV)
-        :return: Словарь вида {'landmarks': [[x, y, z], ...]} для первой найденной руки
+        Обрабатывает один кадр видеопотока.
         """
-        if self._hands is None:
-            raise RuntimeError("Модель MediaPipe Hands не загружена. Вызовите load_model().")
+        if self._detector is None:
+            raise RuntimeError("Детектор MediaPipe не загружен. Вызовите load_model().")
 
-        # MediaPipe строго требует формат изображения RGB
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self._hands.process(rgb_frame)
+        # Переводим кадр из BGR (OpenCV) в RGB, как требует MediaPipe
+        rgb_frame = frame[:, :, ::-1]
+        
+        # Конвертируем numpy-массив в нативный объект Image из MediaPipe
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
 
+        # Для режима RunningMode.VIDEO требуется монотонно растущий таймстамп (в миллисекундах).
+        # Используем фейковый шаг времени на основе кадра (например, 33 мс на кадр для 30 FPS).
+        # В реальном времени здесь использовался бы time.time_ns() // 1_000_000
+        static_timestamp_ms = int(getattr(self, "_frame_counter", 0) * 33)
+        setattr(self, "_frame_counter", getattr(self, "_frame_counter", 0) + 1)
+
+        # Выполняем детекцию
+        detection_result = self._detector.detect_for_video(mp_image, static_timestamp_ms)
+        
         hand_landmarks_list: List[List[float]] = []
 
-        # Если на кадре обнаружены руки
-        if results.multi_hand_landmarks:
-            # Берем только первую руку (согласно нашей конфигурации max_num_hands=1)
-            first_hand = results.multi_hand_landmarks[0]
-            
-            for lm in first_hand.landmark:
-                # lm.x и lm.y нормализованы от 0.0 до 1.0 относительно размеров кадра
-                # lm.z представляет глубину (расстояние от камеры)
+        # Извлекаем координаты, если найдена хотя бы одна рука
+        if detection_result.hand_landmarks and len(detection_result.hand_landmarks) > 0:
+            # Берем первую найденную руку
+            first_hand_landmarks = detection_result.hand_landmarks[0]
+            for lm in first_hand_landmarks:
                 hand_landmarks_list.append([lm.x, lm.y, lm.z])
 
         return {"landmarks": hand_landmarks_list}
