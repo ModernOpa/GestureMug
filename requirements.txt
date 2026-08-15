@@ -2,6 +2,7 @@
 # python3 -m venv .venv
 # source .venv/bin/activate
 # pip install -r requirements.txt
+# wget https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task
 
 # Специфические сборки PyTorch с поддержкой CUDA 13.0 для архитектуры Blackwell (RTX 50xx)
 --index-url https://pytorch.org

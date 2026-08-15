@@ -2,6 +2,8 @@ from typing import Any, Dict, List
 import numpy as np
 import mediapipe as mp
 from interfaces.detector import IDetector
+import os
+import urllib.request
 from config import config
 
 class HandDetector(IDetector):
@@ -17,15 +19,29 @@ class HandDetector(IDetector):
         self._detector: Any = None
 
 
-
     def load_model(self) -> None:
-        """Инициализирует современный HandLandmarker из MediaPipe Tasks API."""
+        """Инициализирует HandLandmarker, предварительно проверяя наличие файла весов."""
+        import os
+        import urllib.request
+
+        # Автоматическое создание папок и скачивание модели, если её нет
+        if not os.path.exists(self._model_path):
+            print(f"[INFO] Файл модели не найден по пути: {self._model_path}")
+            dir_name = os.path.dirname(self._model_path)
+            if dir_name:
+                os.makedirs(dir_name, exist_ok=True)
+            
+            url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+            print(f"[DOWNLOAD] Скачивание модели с Google Storage...")
+            urllib.request.urlretrieve(url, self._model_path)
+            print(f"[SUCCESS] Модель успешно скачана и сохранена в: {self._model_path}")
+
+        # Стандартная инициализация MediaPipe Tasks API
         BaseOptions = mp.tasks.BaseOptions
         HandLandmarker = mp.tasks.vision.HandLandmarker
         HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
         RunningMode = mp.tasks.vision.RunningMode
 
-        # Настраиваем опции детектора для работы в режиме покадровой обработки видео (VIDEO)
         options = HandLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=self._model_path),
             running_mode=RunningMode.VIDEO,
@@ -34,9 +50,9 @@ class HandDetector(IDetector):
             min_hand_presence_confidence=self._min_tracking_conf
         )
         
-        # Создаем экземпляр детектора
         self._detector = HandLandmarker.create_from_options(options)
         print("[INFO] Модель MediaPipe Hands 1.x (Tasks API) успешно инициализирована.")
+
 
     def process(self, frame: np.ndarray) -> Dict[str, Any]:
         """
