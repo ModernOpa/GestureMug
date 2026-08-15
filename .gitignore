@@ -26,6 +26,7 @@ wheels/
 *.swp
 *.swo
 *~
+.mypy_cache/
 
 # Данные (если датасет большой — лучше не пушить в Git)
 data/video/output_processed.mp4
