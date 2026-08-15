@@ -28,11 +28,14 @@ wheels/
 *~
 
 # Данные (если датасет большой — лучше не пушить в Git)
-data/
+data/video/output_processed.mp4
+data/neuro-models/yolov8s.pt
 *.zip
 *.tar.gz
 *.tar
 *.7z
+
+
 
 # Лог-файлы и временные
 logs/
