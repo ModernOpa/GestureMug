@@ -1,0 +1,2 @@
+{"timestamp": "2026-08-15T21:57:50.657008", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 249, "detected_cups_count": 1, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-15T21:57:50.926848", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 264, "detected_cups_count": 1, "system_status": "SUCCESS"}}

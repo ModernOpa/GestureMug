@@ -34,7 +34,7 @@ class AppConfig:
     yolo: YOLOConfig = field(default_factory=YOLOConfig)
     mediapipe: MediaPipeConfig = field(default_factory=MediaPipeConfig)
     logic: LogicConfig = field(default_factory=LogicConfig)
-    log_file_path: str = "events_log.txt"
+    log_file_path: str = "data/events_log.txt"
 
 # Единая точка доступа к конфигурации (Singleton)
 config = AppConfig()
