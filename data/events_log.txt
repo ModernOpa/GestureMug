@@ -11,3 +11,5 @@
 {"timestamp": "2026-08-23T19:16:19.556793", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
 {"timestamp": "2026-08-23T19:25:26.949173", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 245, "target_object_id": 6, "system_status": "SUCCESS"}}
 {"timestamp": "2026-08-23T19:25:27.327969", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T20:27:41.590889", "event_type": "Contextual_Jumbo_Trigger", "metadata": {"frame_id": 245, "track_id": 6, "resolved_owner": "GR_Mug", "matching_confidence": 0.8513, "subscription_valid": true}}
+{"timestamp": "2026-08-23T20:27:41.901292", "event_type": "Contextual_Jumbo_Trigger", "metadata": {"frame_id": 260, "track_id": 6, "resolved_owner": "GR_Mug", "matching_confidence": 0.8443, "subscription_valid": true}}

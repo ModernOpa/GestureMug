@@ -15,11 +15,8 @@ ultralytics==8.4.116
 mediapipe>=1.0.0
 opencv-python-headless>=4.7.0
 lap>=0.5.12
-
-# Инструменты статического анализа
-mypy>=1.10.0
-ruff>=0.4.0
-
+sentence-transformers>=3.0.0
+pillow==12.2.0
 
 # Инструменты статического анализа для VS Code (Best Practices)
 mypy>=1.10.0

@@ -31,6 +31,8 @@ wheels/
 # Данные (если датасет большой — лучше не пушить в Git)
 data/video/output_processed.mp4
 data/neuro-models/yolov8s.pt
+data/neuro-models/clip-cache
+data/vector_db.json
 *.zip
 *.tar.gz
 *.tar
