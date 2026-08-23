@@ -93,19 +93,18 @@ def main() -> None:
                         pt_y = int(lm[1] * 720)
                         cv2.circle(frame, (pt_x, pt_y), 4, (0, 255, 0), -1)
                 
-                # 4. Анализ пространственного триггера
+                # 4. Анализ пространственного триггера (Raycasting + Z-глубина)
                 is_triggered = spatial_analyzer.check_trigger(obj_results, hand_results)
                 
                 if is_triggered:
                     trigger_count += 1
                     
-                    # Нам нужно понять, над КАКОЙ именно кружкой совершен жест.
-                    # берем ID первой попавшейся кружки из результатов
-                    target_cup_id = boxes[0][5] if boxes else -1
+                    # Извлекаем точный ID кружки, выбранный нашей геометрической системой
+                    target_cup_id = spatial_analyzer.get_last_triggered_id()
                     
-                    print(f"[EVENT] Фиксация триггера над Cup ID: {target_cup_id} на кадре {frame_count}.")
+                    print(f"[EVENT] Фиксация триггера над Cup ID: {target_cup_id} на кадре {frame_count}. Запись в БД...")
                     
-                    # Отправляем событие в базу данных с точным ID объекта!
+                    # Отправляем событие в базу данных с точным ID объекта от ByteTrack
                     db_client.save_event(
                         event_type="Jumbo_Over_Cup",
                         metadata={

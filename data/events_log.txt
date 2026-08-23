@@ -1,2 +1,13 @@
 {"timestamp": "2026-08-15T21:57:50.657008", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 249, "detected_cups_count": 1, "system_status": "SUCCESS"}}
 {"timestamp": "2026-08-15T21:57:50.926848", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 264, "detected_cups_count": 1, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T15:04:51.971354", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 238, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T15:04:52.109357", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 245, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T15:04:52.284826", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 253, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T15:04:52.450253", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T15:04:52.737905", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 272, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:06:13.556691", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 245, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:06:13.822899", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:16:19.225584", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 245, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:16:19.556793", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:25:26.949173", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 245, "target_object_id": 6, "system_status": "SUCCESS"}}
+{"timestamp": "2026-08-23T19:25:27.327969", "event_type": "Jumbo_Over_Cup", "metadata": {"frame_id": 260, "target_object_id": 6, "system_status": "SUCCESS"}}
