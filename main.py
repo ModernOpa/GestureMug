@@ -71,12 +71,18 @@ def main() -> None:
                 boxes = obj_results.get("boxes", [])
                 landmarks = hand_results.get("landmarks", [])
                 
-                # 2. Отрисовка кружек
+                # 2. Отрисовка кружек (YOLO + ByteTrack)
                 for box in boxes:
-                    x1, y1, x2, y2, conf = box
+                    # Теперь у нас 6 параметров в коробке!
+                    x1, y1, x2, y2, conf, track_id = box
+                    
+                    # Рисуем рамку вокруг кружки
                     cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 2)
+                    
+                    # HUD: Пишем конкретный ID: "Cup ID: 2 (0.92)"
+                    label = f"Cup ID: {track_id} ({conf:.2f})"
                     cv2.putText(
-                        frame, f"Cup: {conf:.2f}", (int(x1), int(y1) - 10), 
+                        frame, label, (int(x1), int(y1) - 10), 
                         cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2
                     )
                 
@@ -92,30 +98,35 @@ def main() -> None:
                 
                 if is_triggered:
                     trigger_count += 1
-                    print(f"[EVENT] Фиксация триггера на кадре {frame_count}. Запись в БД...")
                     
-                    # Отправляем событие в базу данных с контекстными метаданными
+                    # Нам нужно понять, над КАКОЙ именно кружкой совершен жест.
+                    # берем ID первой попавшейся кружки из результатов
+                    target_cup_id = boxes[0][5] if boxes else -1
+                    
+                    print(f"[EVENT] Фиксация триггера над Cup ID: {target_cup_id} на кадре {frame_count}.")
+                    
+                    # Отправляем событие в базу данных с точным ID объекта!
                     db_client.save_event(
                         event_type="Jumbo_Over_Cup",
                         metadata={
                             "frame_id": frame_count,
-                            "detected_cups_count": len(boxes),
+                            "target_object_id": target_cup_id,  # Уникальный ID от ByteTrack
                             "system_status": "SUCCESS"
                         }
                     )
                     
                     # HUD эффекты на видео кадра
                     cv2.putText(
-                        frame, "MATCH: JUMBO OVER CUP!", (50, 80), 
+                        frame, f"MATCH: JUMBO OVER CUP {target_cup_id}!", (50, 80), 
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 3
                     )
                     cv2.rectangle(frame, (0, 0), (1280, 720), (0, 255, 0), 5)
-                
+               
                 video_writer.write(frame)
                 
                 if frame_count % 30 == 0:
                     print(f"Обработано кадров: {frame_count}")
-            
+
             video_writer.release()
             print(f"\n[SUCCESS] Проект полностью реализован!")
             print(f"Всего событий записано в БД: {trigger_count}")

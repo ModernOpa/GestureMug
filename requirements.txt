@@ -14,6 +14,7 @@ torchaudio==2.11.0+cu130
 ultralytics==8.4.116
 mediapipe>=1.0.0
 opencv-python-headless>=4.7.0
+lap>=0.5.12
 
 # Инструменты статического анализа
 mypy>=1.10.0
