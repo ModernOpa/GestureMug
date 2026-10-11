@@ -22,7 +22,49 @@ def run_stage4_self_test() -> None:
     print("[TEST] Самопроверка успешно пройдена!\n")
 
 
-def main() -> None:
+def main() -> None:   
+    print("=== ЗАПУСК МУЛЬТИМОДАЛЬНОЙ СИСТЕМЫ ВЕРИФИКАЦИИ ПОДПИСОК ===")
+        
+    try:
+        run_stage4_self_test()
+    except AssertionError as e:
+        print(f"[CRITICAL] Тест логики провален: {e}")
+        return
+
+    # Пошаговый маркерный дебаг инициализации
+    print("[DEBUG] Создание VectorRegistry...")
+    vector_db = VectorRegistry()
+    
+    print("[DEBUG] Создание MockDatabaseClient...")
+    event_db = MockDatabaseClient()
+    
+    print("[DEBUG] Создание ObjectDetector...")
+    obj_detector = ObjectDetector()
+    
+    print("[DEBUG] Создание HandDetector...")
+    hand_detector = HandDetector()
+    
+    print("[DEBUG] Создание SpatialLogicAnalyzer...")
+    spatial_analyzer = SpatialLogicAnalyzer()
+    
+    print("[DEBUG] Создание CLIPFeatureExtractor...")
+    clip_encoder = CLIPFeatureExtractor()
+    
+    print("[DEBUG] Все объекты классов созданы. Начинаем load_model()...")
+    
+    try:
+        print("[DEBUG] Загрузка YOLO...")
+        obj_detector.load_model()
+        print("[DEBUG] Загрузка MediaPipe...")
+        hand_detector.load_model()
+        print("[DEBUG] Загрузка CLIP...")
+        clip_encoder.load_model()
+        print("[DEBUG] Подключение к Event DB...")
+        event_db.connect()
+    except Exception as e:
+        print(f"Ошибка при инициализации компонентов: {e}")
+        return
+
     print("=== ЗАПУСК МУЛЬТИМОДАЛЬНОЙ СИСТЕМЫ ВЕРИФИКАЦИИ ПОДПИСОК ===")
     
     try:
