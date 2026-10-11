@@ -1,7 +1,8 @@
 import os
 
 import cv2
-
+import socket
+from config import config
 from modules.clip_encoder import CLIPFeatureExtractor
 from modules.hand_detector import HandDetector
 from modules.mock_db import MockDatabaseClient
@@ -23,6 +24,10 @@ def run_stage4_self_test() -> None:
 
 
 def main() -> None:   
+    # Гарантируем, что сессия SSH VS Code увидит графический сервер WSLg
+    if "DISPLAY" not in os.environ:
+        os.environ["DISPLAY"] = ":0"
+        
     print("=== ЗАПУСК МУЛЬТИМОДАЛЬНОЙ СИСТЕМЫ ВЕРИФИКАЦИИ ПОДПИСОК ===")
         
     try:
@@ -194,7 +199,17 @@ def main() -> None:
                     )
                     cv2.rectangle(frame, (0, 0), (1280, 720), hud_color, 5)
                 
+                # Запись кадра в файл
                 video_writer.write(frame)
+                
+                # ВЫВОД ЖИВОГО ОКНА НА ЭКРАН ХОСТА WINDOWS:
+                # Создаем окно с флагом нормального (не растянутого) отображения
+                cv2.imshow("Advanced CV - Live AR HUD", frame)
+                cv2.namedWindow("Advanced CV - Live AR HUD", cv2.WINDOW_NORMAL)
+                
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+                
                 
                 if frame_count % 30 == 0:
                     print(f"Успешно обработано кадров: {frame_count}")

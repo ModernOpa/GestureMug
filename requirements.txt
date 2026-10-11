@@ -10,10 +10,10 @@ torch==2.13.0+cu130
 torchvision==0.28.0+cu130
 torchaudio==2.11.0+cu130
 
-# Зависимости компьютерного зрения
+# Зависимости компьютерного зрения и реидентификации
 ultralytics==8.4.116
 mediapipe>=1.0.0
-opencv-python-headless>=4.7.0
+opencv-python==5.0.0.93
 lap>=0.5.12
 sentence-transformers>=3.0.0
 pillow==12.2.0

@@ -13,7 +13,8 @@ class VideoConfig:
 @dataclass(frozen=True)
 class NetworkConfig:
     host_ip: str = "192.168.182.20"
-    port: int = 9999
+    cam_port: int = 9999
+    ui_port: int = 9998
 
 @dataclass(frozen=True)
 class CLIPConfig:
@@ -23,7 +24,7 @@ class CLIPConfig:
 @dataclass(frozen=True)
 class VectorDBConfig:
     db_path: str = "data/vector_db.json"
-    reid_threshold: float = 0.82  # Порог сходства косинусного расстояния для подписки
+    reid_threshold: float = 0.77  # Порог сходства косинусного расстояния для подписки
 
 @dataclass(frozen=True)
 class YOLOConfig:

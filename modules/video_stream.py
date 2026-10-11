@@ -28,7 +28,7 @@ class VideoStream:
             self._client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
             host_ip = config.network.host_ip
-            port = config.network.port
+            port = config.network.cam_port
 
             print(f"[WSL NETWORK] Попытка подключения к камере виртуальной Windows 11 по IP: {host_ip}:{port}")
             try:

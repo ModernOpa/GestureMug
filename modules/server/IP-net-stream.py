@@ -6,7 +6,7 @@ import struct
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind(('0.0.0.0', 9999)) 
 server_socket.listen(5)
-print("[WIN11-VM] Ожидание подключения от WSL2 на порту 9999...")
+print("[WIN11-VM] Легковесный сервер запущен. Ожидание WSL2 на порту 9999...")
 
 cap = cv2.VideoCapture(0) # Открывает камеру, которая работает в твоей виртуальной Win11
 
@@ -23,6 +23,7 @@ try:
                 client_socket.sendall(message)
             except (ConnectionResetError, BrokenPipeError):
                 break
+        client_socket.close()
 except KeyboardInterrupt:
     print("Остановка.")
 finally:
