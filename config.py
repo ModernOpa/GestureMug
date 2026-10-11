@@ -2,12 +2,23 @@ import os
 from dataclasses import dataclass, field
 from typing import Tuple
 
+
 @dataclass(frozen=True)
 class VideoConfig:
     source: str | int = "data/video/video1.mp4"  # 0 для веб-камеры, или путь к 'video.mp4'
     width: int = 1280
     height: int = 720
     fps_target: int = 30
+
+@dataclass(frozen=True)
+class CLIPConfig:
+    model_name: str = "clip-ViT-B-32"
+    cache_dir: str = "data/neuro-models/clip-cache"
+
+@dataclass(frozen=True)
+class VectorDBConfig:
+    db_path: str = "data/vector_db.json"
+    reid_threshold: float = 0.82  # Порог сходства косинусного расстояния для подписки
 
 @dataclass(frozen=True)
 class YOLOConfig:
@@ -34,6 +45,8 @@ class AppConfig:
     yolo: YOLOConfig = field(default_factory=YOLOConfig)
     mediapipe: MediaPipeConfig = field(default_factory=MediaPipeConfig)
     logic: LogicConfig = field(default_factory=LogicConfig)
+    clip: CLIPConfig = field(default_factory=CLIPConfig)
+    vector_db: VectorDBConfig = field(default_factory=VectorDBConfig)
     log_file_path: str = "data/events_log.txt"
 
 # Единая точка доступа к конфигурации (Singleton)

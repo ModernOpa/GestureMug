@@ -12,106 +12,125 @@
 # полученного от YOLO (или с небольшим допустимым зазором, который мы указали в config.py).
 
 from typing import Any, Dict, List
+
 import numpy as np
+
 from config import config
+
 
 class SpatialLogicAnalyzer:
     """
-    Модуль бизнес-логики. Анализирует взаимное расположение ключевых точек руки
-    и bounding box'ов объектов для фиксации контекстных жестов.
+    Модуль бизнес-логики (Advanced Stage 5.2). 
+    Определяет жест 'Шака' и использует Raycasting + фильтрацию по площади (Z-глубине)
+    для однозначного определения целевого ID объекта в зашумленной сцене.
     """
     def __init__(self) -> None:
         self._hold_threshold: int = config.logic.trigger_hold_frames
         self._spatial_threshold: int = config.logic.spatial_threshold_px
-        self._frame_counter: int = 0  # Счетчик кадров удержания жеста
+        self._frame_counter: int = 0
+        self._last_triggered_id: int = -1  # Храним ID кружки, над которой зафиксирован жест
 
     def _is_shaka_gesture(self, landmarks: List[List[float]]) -> bool:
-        """
-        Проверяет, сложены ли точки руки в жест 'Шака' (Большой и мизинец выпрямлены, остальные согнуты).
-        """
+        """Проверяет геометрию кисти на соответствие жесту 'Шака'."""
         if not landmarks or len(landmarks) < 21:
             return False
 
-        # Конвертируем в numpy для быстрых векторных расчетов
         lms = np.array(landmarks)
-
-        # Основание ладони (Wrist)
         wrist = lms[0]
 
-        # Кончики пальцев (Tips)
+        # Кончики и суставы
         thumb_tip = lms[4]
-        index_tip = lms[8]
-        middle_tip = lms[12]
-        ring_tip = lms[16]
+        thumb_ip = lms[3]  # Сустав большого пальца для вектора направления
+        
+        index_tip, index_pip = lms[8], lms[6]
+        middle_tip, middle_pip = lms[12], lms[10]
+        ring_tip, ring_pip = lms[16], lms[14]
         pinky_tip = lms[20]
 
-        # Суставы пальцев (PIP - Proximal Interphalangeal)
-        index_pip = lms[6]
-        middle_pip = lms[10]
-        ring_pip = lms[14]
-
-        # 1. Проверяем, что указательный, средний и безымянный согнуты
-        # Расстояние от кончика до запястья должно быть меньше, чем от сустава до запястья
+        # Указательный, средний, безымянный согнуты к ладони
         index_folded = np.linalg.norm(index_tip - wrist) < np.linalg.norm(index_pip - wrist)
         middle_folded = np.linalg.norm(middle_tip - wrist) < np.linalg.norm(middle_pip - wrist)
         ring_folded = np.linalg.norm(ring_tip - wrist) < np.linalg.norm(ring_pip - wrist)
 
-        # 2. Проверяем, что большой палец и мизинец разведены (расстояние между ними значительное)
+        # Большой и мизинец максимально разведены
         span_dist = np.linalg.norm(thumb_tip - pinky_tip)
         
-        # 3. Наклон большого пальца вниз: y-координата кончика (4) ниже, чем у его основания (2)
-        # В OpenCV координата Y растет сверху вниз
-        thumb_pointing_down = thumb_tip[1] > lms[2][1]
+        # Наклон большого пальца вниз (в OpenCV координата Y инвертирована: вниз - это плюс)
+        thumb_pointing_down = thumb_tip[1] > thumb_ip[1]
 
-        if index_folded and middle_folded and ring_folded and (span_dist > 0.15) and thumb_pointing_down:
-            return True
-            
-        return False
+        return bool(index_folded and middle_folded and ring_folded and span_dist > 0.15 and thumb_pointing_down)
 
     def check_trigger(self, yolo_results: Dict[str, Any], hand_results: Dict[str, Any]) -> bool:
         """
-        Основной метод проверки пространственно-временного триггера.
-        
-        :return: True, если целевой жест удерживается над кружкой заданное количество кадров.
+        Проверяет пространственно-временной триггер с использованием Raycasting и Z-глубины.
+        Обновляет self._last_triggered_id при успешном матчинге.
         """
-        boxes: List[List[float]] = yolo_results.get("boxes", [])
+        boxes: List[List[Any]] = yolo_results.get("boxes", [])
         landmarks: List[List[float]] = hand_results.get("landmarks", [])
 
-        # Если руки нет в кадре или жест не "Шака" — сбрасываем счетчик удержания
         if not landmarks or not self._is_shaka_gesture(landmarks):
-            self._frame_counter = max(0, self._frame_counter - 1) # Плавное затухание вместо резкого сброса
+            self._frame_counter = max(0, self._frame_counter - 1)
+            self._last_triggered_id = -1
             return False
 
-        # Кончик большого пальца в нормализованных координатах
-        thumb_tip_norm = landmarks[4]
-        # Переводим в пиксельные координаты нашего стандарта (1280x720)
-        thumb_x = int(thumb_tip_norm[0] * 1280)
-        thumb_y = int(thumb_tip_norm[1] * 720)
+        lms = np.array(landmarks)
+        thumb_ip_norm = lms[3]   # Сустав (начало луча)
+        thumb_tip_norm = lms[4]  # Кончик (конец луча)
 
-        thumb_inside_cup = False
+        # Переводим направляющие точки луча в пиксели экрана (1280x720)
+        p1 = np.array([int(thumb_ip_norm[0] * 1280), int(thumb_ip_norm[1] * 720)])
+        p2 = np.array([int(thumb_tip_norm[0] * 1280), int(thumb_tip_norm[1] * 720)])
 
-        # Проверяем пересечение с любой из найденных кружек
+        # Строим вектор луча направления большого пальца
+        ray_vector = p2 - p1
+        ray_length = np.linalg.norm(ray_vector)
+        if ray_length == 0:
+            return False
+        ray_unit = ray_vector / ray_length
+
+        candidate_cups: List[Dict[str, Any]] = []
+
+        # Сканируем кружки (теперь извлекаем строго 6 параметров!)
         for box in boxes:
-            x1, y1, x2, y2, _ = box
+            x1, y1, x2, y2, conf, track_id = box
             
-            # Расширяем bounding box на допустимый пространственный порог (зазор)
-            padded_x1 = x1 - self._spatial_threshold
-            padded_y1 = y1 - self._spatial_threshold
-            padded_x2 = x2 + self._spatial_threshold
-            padded_y2 = y2 + self._spatial_threshold
+            # Считаем площадь Bounding Box (Эвристика Z-глубины: чем больше площадь, тем ближе объект)
+            area = (x2 - x1) * (y2 - y1)
 
-            # Проверяем, попадает ли точка пальца внутрь рамки кружки
-            if padded_x1 <= thumb_x <= padded_x2 and padded_y1 <= thumb_y <= padded_y2:
-                thumb_inside_cup = True
-                break
+            # Проверяем Raycasting: протыкает ли луч прямоугольник кружки.
+            # Шагаем по вектору луча вперед от кончика пальца на дистанцию до 300 пикселей
+            intersect = False
+            for step in range(0, 300, 10):
+                check_point = p2 + ray_unit * step
+                cx, cy = check_point[0], check_point[1]
+                
+                # Попадание в расширенную рамку кружки
+                if (x1 - self._spatial_threshold <= cx <= x2 + self._spatial_threshold and 
+                    y1 - self._spatial_threshold <= cy <= y2 + self._spatial_threshold):
+                    intersect = True
+                    break
+            
+            if intersect:
+                candidate_cups.append({"id": track_id, "area": area})
 
-        if thumb_inside_cup:
+        # Если луч пересек одну или несколько кружек
+        if candidate_cups:
+            # Сортируем кандидатов по площади (от большей к меньшей)
+            # Самая большая кружка — на переднем плане. Берем её!
+            candidate_cups.sort(key=lambda x: x["area"], reverse=True)
+            best_target_id = candidate_cups[0]["id"]
+
             self._frame_counter += 1
-            # Если жест стабильно удерживается нужное количество кадров
             if self._frame_counter >= self._hold_threshold:
-                self._frame_counter = 0  # Сбрасываем счетчик, чтобы не спамить триггерами подряд
+                self._frame_counter = 0  # Сброс триггера
+                self._last_triggered_id = best_target_id  # Запоминаем целевой ID для БД
                 return True
         else:
             self._frame_counter = max(0, self._frame_counter - 1)
+            self._last_triggered_id = -1
 
         return False
+
+    def get_last_triggered_id(self) -> int:
+        """Возвращает ID кружки, которая вызвала последнее успешное срабатывание триггера."""
+        return self._last_triggered_id
