@@ -9,6 +9,11 @@ class VideoConfig:
     width: int = 1280
     height: int = 720
     fps_target: int = 30
+    
+@dataclass(frozen=True)
+class NetworkConfig:
+    host_ip: str = "192.168.182.20"
+    port: int = 9999
 
 @dataclass(frozen=True)
 class CLIPConfig:
@@ -42,6 +47,7 @@ class LogicConfig:
 @dataclass(frozen=True)
 class AppConfig:
     video: VideoConfig = field(default_factory=VideoConfig)
+    network: NetworkConfig = field(default_factory=NetworkConfig)
     yolo: YOLOConfig = field(default_factory=YOLOConfig)
     mediapipe: MediaPipeConfig = field(default_factory=MediaPipeConfig)
     logic: LogicConfig = field(default_factory=LogicConfig)
