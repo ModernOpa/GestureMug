@@ -9,12 +9,15 @@ class VideoConfig:
     width: int = 1280
     height: int = 720
     fps_target: int = 30
+    output_dir: str = "data/video"
+    output_filename: str = "output_processed.mp4"
     
 @dataclass(frozen=True)
 class NetworkConfig:
     host_ip: str = "192.168.182.20"
     cam_port: int = 9999
     ui_port: int = 9998
+    display_env: str = ":0"
 
 @dataclass(frozen=True)
 class CLIPConfig:
@@ -46,6 +49,12 @@ class LogicConfig:
     spatial_threshold_px: int = 50  # Допустимый радиус/зазор между пальцем и bounding box кружки
 
 @dataclass(frozen=True)
+class SoundConfig:
+    sound_dir: str = "data/sounds"
+    success_wav: str = "data/sounds/success.wav"
+    denied_wav: str = "data/sounds/denied.wav"
+
+@dataclass(frozen=True)
 class AppConfig:
     video: VideoConfig = field(default_factory=VideoConfig)
     network: NetworkConfig = field(default_factory=NetworkConfig)
@@ -54,6 +63,7 @@ class AppConfig:
     logic: LogicConfig = field(default_factory=LogicConfig)
     clip: CLIPConfig = field(default_factory=CLIPConfig)
     vector_db: VectorDBConfig = field(default_factory=VectorDBConfig)
+    sounds: SoundConfig = field(default_factory=SoundConfig) 
     log_file_path: str = "data/events_log.txt"
 
 # Единая точка доступа к конфигурации (Singleton)

@@ -5,6 +5,7 @@ import struct
 import numpy as np
 from typing import Generator, Any
 from config import config
+import os
 
 class VideoStream:
     """
