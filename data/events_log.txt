@@ -266,3 +266,18 @@
 {"timestamp": "2026-10-18T17:20:33.129501", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7894}}
 {"timestamp": "2026-10-18T17:20:33.642073", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7795}}
 {"timestamp": "2026-10-18T17:20:34.150437", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7873}}
+{"timestamp": "2026-10-18T17:39:16.504005", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5832}}
+{"timestamp": "2026-10-18T17:39:16.914709", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5672}}
+{"timestamp": "2026-10-18T17:39:25.463515", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5827}}
+{"timestamp": "2026-10-18T17:39:25.895238", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5735}}
+{"timestamp": "2026-10-18T17:39:26.358411", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5702}}
+{"timestamp": "2026-10-18T17:39:30.234040", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5651}}
+{"timestamp": "2026-10-18T17:39:30.690943", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5938}}
+{"timestamp": "2026-10-18T17:39:31.160266", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5951}}
+{"timestamp": "2026-10-18T17:39:31.649572", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.5827}}
+{"timestamp": "2026-10-18T17:39:32.184041", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.575}}
+{"timestamp": "2026-10-18T17:39:35.463225", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7773}}
+{"timestamp": "2026-10-18T17:39:35.970026", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7978}}
+{"timestamp": "2026-10-18T17:39:36.452821", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7669}}
+{"timestamp": "2026-10-18T17:39:41.906841", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7448}}
+{"timestamp": "2026-10-18T17:39:42.494767", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.79}}

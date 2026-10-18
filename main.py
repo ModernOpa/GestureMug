@@ -25,34 +25,62 @@ def run_stage4_self_test() -> None:
     print("[TEST] Самопроверка успешно пройдена!\n")
 
 def draw_sidebar(dashboard: np.ndarray, fps: float, total_events: int, recent_logs: List[str], trigger_state: str) -> None:
-    """Отрисовка технологичного UI Сайдбара в правой части экрана (Dashboard)."""
-    dashboard[:, :] = (30, 30, 33)
-    cv2.line(dashboard, (0, 0), (0, 720), (50, 50, 55), 2)
-    cv2.putText(dashboard, "SYSTEM METRICS", (20, 40), cv2.FONT_HERSHEY_TRIPLEX, 0.7, (200, 200, 200), 1)
-    cv2.line(dashboard, (20, 55), (380, 55), (70, 70, 75), 1)
-    cv2.putText(dashboard, f"FPS: {fps:.1f}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 1)
+    """
+    Отрисовка технологичного UI Сайдбара в правой части экрана (Dashboard).
+    Обеспечивает вывод системных метрик, статуса безопасности сцены
+    и динамическую ленту логов с цветовым кодированием событий.
+    """
+    # 1. Заливка фона панели глубоким темно-серым цветом (Carbon/Cyberpunk стиль)
+    dashboard[:, :] = (33, 30, 30)  # BGR формат
     
+    # Декоративная разделительная неоновая линия между видео и сайдбаром
+    cv2.line(dashboard, (0, 0), (0, 720), (55, 53, 50), 2)
+    
+    # 2. СЕКЦИЯ А: Системные метрики
+    cv2.putText(dashboard, "SYSTEM METRICS", (20, 40), cv2.FONT_HERSHEY_TRIPLEX, 0.6, (220, 220, 220), 1)
+    cv2.line(dashboard, (20, 55), (380, 55), (75, 71, 68), 1)
+    
+    # Вывод текущего FPS конвейера
+    cv2.putText(dashboard, f"FPS: {fps:.1f}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 1)
+    
+    # Вывод общего счетчика успешных валидаций в БД
     text_log = f"EVENTS LOGGED: {total_events}"
-    cv2.putText(dashboard, text_log, (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (200, 200, 200), 1)
-    cv2.putText(dashboard, "SECURITY STATUS:", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (130, 130, 130), 1)
+    cv2.putText(dashboard, text_log, (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (220, 220, 220), 1)
+    
+    # 3. СЕКЦИЯ Б: Статус Безопасности (Security HUD)
+    cv2.putText(dashboard, "SECURITY STATUS:", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (140, 140, 140), 1)
     
     if trigger_state == "GRANTED":
-        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 100, 0), -1)
-        cv2.putText(dashboard, "ACCESS GRANTED", (60, 235), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 255, 0), 2)
+        # Яркий зеленый прямоугольник при успешном доступе подписчика
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 120, 0), -1)
+        cv2.putText(dashboard, "ACCESS GRANTED", (65, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 255, 0), 2)
     elif trigger_state == "DENIED":
-        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 0, 120), -1)
-        cv2.putText(dashboard, "ACCESS DENIED", (70, 235), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 255), 2)
+        # Яркий красный прямоугольник при обнаружении незарегистрированного объекта
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 0, 140), -1)
+        cv2.putText(dashboard, "ACCESS DENIED", (75, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 0, 255), 2)
     else:
-        cv2.rectangle(dashboard, (20, 200), (380, 250), (45, 45, 48), -1)
-        cv2.putText(dashboard, "SCANNING...", (110, 235), cv2.FONT_HERSHEY_DUPLEX, 0.7, (150, 150, 150), 1)
+        # Стандартное состояние сканирования сцены (Нейтральный цвет)
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (50, 47, 45), -1)
+        cv2.putText(dashboard, "SCANNING...", (115, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (160, 160, 160), 1)
 
-    cv2.putText(dashboard, "RECENT EVENTS", (20, 320), cv2.FONT_HERSHEY_TRIPLEX, 0.6, (200, 200, 200), 1)
-    cv2.line(dashboard, (20, 335), (380, 335), (70, 70, 75), 1)
+    # 4. СЕКЦИЯ В: Живая лента событий (Recent Events Log)
+    cv2.putText(dashboard, "RECENT EVENTS LOG", (20, 320), cv2.FONT_HERSHEY_TRIPLEX, 0.6, (220, 220, 220), 1)
+    cv2.line(dashboard, (20, 335), (380, 335), (75, 71, 68), 1)
     
     y_offset = 370
+    # Итерируемся по последним 5 событиям из истории логов
     for log in recent_logs[-5:]:
-        cv2.putText(dashboard, log, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 200, 255), 1)
+        # СЕНИОР-ФИКС: Динамическое цветовое кодирование строк
+        # Если в строке лога зафиксирован отказ доступа — подсвечиваем всю строку тревожным КРАСНЫМ цветом
+        if "Access Denied" in log:
+            log_color = (0, 0, 255)      # Яркий красный (BGR)
+        else:
+            log_color = (0, 220, 255)    # Неоновый бирюзовый для успешных событий (BGR)
+            
+        # Отрисовка строки лога (Таймстамп с секундами уже встроен внутри log строки на Этапе инференса)
+        cv2.putText(dashboard, log, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.45, log_color, 1)
         y_offset += 35
+
 def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector: HandDetector, 
                   spatial_analyzer: SpatialLogicAnalyzer, clip_encoder: CLIPFeatureExtractor, 
                   vector_db: VectorRegistry, event_db: MockDatabaseClient, snd_success: Any, 
