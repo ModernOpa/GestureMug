@@ -1,5 +1,12 @@
-import cv2
 import os
+# Блокировка сетевых запросов Hugging Face
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+# Глушение отладочных C++ логов MediaPipe/TensorFlow (0 - все логи, 3 - только критические ошибки)
+os.environ["GLOG_minloglevel"] = "3" 
+
+import cv2
 import time
 import socket
 import subprocess
