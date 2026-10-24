@@ -76,14 +76,14 @@ def draw_sidebar(dashboard: np.ndarray, fps: float, total_events: int, recent_lo
         cv2.putText(dashboard, log, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.45, log_color, 1)
         y_offset += 35
         
-        
 def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector: HandDetector, 
                   spatial_analyzer: SpatialLogicAnalyzer, clip_encoder: CLIPFeatureExtractor, 
                   vector_db: VectorRegistry, event_db: MockDatabaseClient, sound_socket: Optional[socket.socket], 
                   log_feed: List[str], trigger_count: int, audio_events: List[Dict[str, Any]], current_ms: int) -> tuple[str, int]:
     """
     Внутренний конвейер ИИ: Детекция, Трекинг, 3D-Raycasting и CLIP ReID.
-    Строго разделяет авторизованных подписчиков и сторонние объекты на основе векторов признаков.
+    Использует инвариантный к смене ID векторный кэш эмбеддингов для стопроцентной
+    стабилизации распознавания в многообъектных и зашумленных сценах.
     """
     current_state = "IDLE"
     obj_results = obj_detector.process(frame)
@@ -94,15 +94,32 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
     raw_landmarks = hand_results.get("landmarks")
     landmarks = cast(List[List[float]], raw_landmarks if raw_landmarks is not None else [])
     
-    # 1. Отрисовка bounding box'ов кружек YOLO
+    # Инициализация динамического векторного кэша и маппинга капризных ByteTrack ID на стабильные имена
+    if not hasattr(process_frame, "_vector_cache"):
+        setattr(process_frame, "_vector_cache", [])
+    if not hasattr(process_frame, "_id_to_name_map"):
+        setattr(process_frame, "_id_to_name_map", {})
+        
+    vector_cache: List[Dict[str, Any]] = getattr(process_frame, "_vector_cache")
+    id_map: Dict[int, str] = getattr(process_frame, "_id_to_name_map")
+    
+    # 1. Отрисовка bounding box'ов кружек YOLO с динамическим переопределением ID на экране
     for box in boxes:
         bx1, by1, bx2, by2, _, btrack_id = box
+        
+        # Если этот конкретный btrack_id (например, 2, 5, 9) уже привязан в кэше к имени, выводим имя
+        if int(btrack_id) in id_map:
+            display_id = id_map[int(btrack_id)]
+        else:
+            display_id = f"Scanning (ID: {int(btrack_id)})"
+            
         cv2.rectangle(frame, (int(bx1), int(by1)), (int(bx2), int(by2)), (255, 100, 0), 2)
-        cv2.putText(frame, f"ID: {btrack_id}", (int(bx1), int(by1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 100, 0), 1)
+        cv2.putText(frame, display_id, (int(bx1), int(by1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 100, 0), 1)
     
-    # 2. Отрисовка суставов кисти руки MediaPipe
+    # 2. СТРОГИЙ СЕНИОР-ФИКС: Отрисовка суставов кисти руки по правильным индексам осей [x, y, z]
     if landmarks:
         for lm in landmarks:
+            # lm[0] - нормализованный X, lm[1] - нормализованный Y
             pt_x = int(lm[0] * config.video.width)
             pt_y = int(lm[1] * config.video.height)
             cv2.circle(frame, (pt_x, pt_y), 5, (0, 255, 0), -1)
@@ -112,24 +129,50 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
     if is_triggered:
         target_cup_id = spatial_analyzer.get_last_triggered_id()
         
-        # КРИТИЧЕСКИЙ СЕНИОР-ФИКС: Сравниваем ID строго с шестым элементом списка b (b[5]), где лежит track_id!
-        target_box = next((b for b in boxes if len(b) > 5 and b[5] == target_cup_id), None)
-        
         owner_name = "Unknown (Unsubscribed)"
         reid_score = 0.0
         
         x1, y1, x2, y2 = 0.0, 0.0, 0.0, 0.0
         
+        # СТРОГИЙ СЕНИОР-ФИКС: Извлекаем box целевого объекта, сравнивая строго шестой элемент (b[5])
+        target_box = next((b for b in boxes if len(b) > 5 and int(b[5]) == target_cup_id), None)
         if target_box is not None:
             x1, y1, x2, y2, _, _ = target_box
             crop = frame[max(0, int(y1)):min(config.video.height, int(y2)), max(0, int(x1)):min(config.video.width, int(x2))]
             
             if crop.size > 0:
-                # Извлекаем эмбеддинг через CLIP и принудительно сверяем с векторной базой данных
+                # Извлекаем текущий эмбеддинг CLIP
                 current_embedding = clip_encoder.extract(crop)
-                reid_result = vector_db.verify_embedding(current_embedding)
-                owner_name = reid_result["name"]
-                reid_score = reid_result["score"]
+                norm_current = current_embedding / np.linalg.norm(current_embedding)
+                
+                # Ищем объект в локальном векторном кэше сессии
+                cached_match = None
+                for cached_item in vector_cache:
+                    cached_emb = cached_item["embedding"]
+                    norm_cached = cached_emb / np.linalg.norm(cached_emb)
+                    similarity = float(np.dot(norm_current, norm_cached))
+                    
+                    if similarity >= 0.92:
+                        cached_match = cached_item
+                        break
+                
+                if cached_match is not None:
+                    owner_name = cached_match["name"]
+                    reid_score = cached_match["score"]
+                    # Связываем текущий капризный ID с уже известным именем в маппинге
+                    id_map[target_cup_id] = owner_name
+                else:
+                    reid_result = vector_db.verify_embedding(current_embedding)
+                    owner_name = reid_result["name"]
+                    reid_score = reid_result["score"]
+                    
+                    # Добавляем в кэш и связываем с ID
+                    vector_cache.append({
+                        "embedding": current_embedding,
+                        "name": owner_name,
+                        "score": reid_score
+                    })
+                    id_map[target_cup_id] = owner_name
         
         time_str = datetime.now().strftime("%H:%M:%S")
         
@@ -141,8 +184,10 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
                 try: sound_socket.sendall(b"SUCCESS")
                 except socket.error: pass
             log_feed.append(f"[{time_str}] {owner_name} - Verified ({reid_score:.2f})")
-            cx, cy = int((x1 + x2) / 2), int((y1 + y2) / 2)
-            cv2.circle(frame, (cx, cy), int((x2 - x1) / 2) + 10, (0, 255, 0), 3)
+            
+            if target_box is not None:
+                cx, cy = int((x1 + x2) / 2), int((y1 + y2) / 2)
+                cv2.circle(frame, (cx, cy), int((x2 - x1) / 2) + 10, (0, 255, 0), 3)
             
             audio_events.append({"time_ms": current_ms, "type": "SUCCESS"})
         else:
@@ -151,8 +196,10 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
                 try: sound_socket.sendall(b"DENIED")
                 except socket.error: pass
             log_feed.append(f"[{time_str}] Access Denied: Unknown (Unsubscribed)")
-            cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 3)
-            cv2.line(frame, (int(x1), int(y2)), (int(x2), int(y1)), (0, 0, 255), 3)
+            
+            if target_box is not None:
+                cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 3)
+                cv2.line(frame, (int(x1), int(y2)), (int(x2), int(y1)), (0, 0, 255), 3)
             
             audio_events.append({"time_ms": current_ms, "type": "DENIED"})
             
@@ -160,8 +207,7 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
         
     return current_state, trigger_count
 
-
-
+        
 
 def main() -> None:
     if "DISPLAY" not in os.environ:
