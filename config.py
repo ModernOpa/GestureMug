@@ -5,7 +5,7 @@ from typing import Tuple
 
 @dataclass(frozen=True)
 class VideoConfig:
-    source: str | int = "wsl_network"  # "data/video/video1.mp4"  # 0 для веб-камеры, или путь к 'video.mp4'
+    source: str | int = "data/video/video5.mp4"  # 0 для веб-камеры, или путь к 'video.mp4'
     width: int = 1280
     height: int = 720
     fps_target: int = 30
@@ -17,6 +17,7 @@ class NetworkConfig:
     host_ip: str = "192.168.182.20"
     cam_port: int = 9999
     ui_port: int = 9998
+    sound_port: int = 9996
     display_env: str = ":0"
 
 @dataclass(frozen=True)
