@@ -83,7 +83,7 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
                   log_feed: List[str], trigger_count: int, audio_events: List[Dict[str, Any]], current_ms: int) -> tuple[str, int]:
     """
     Внутренний конвейер ИИ: Детекция, Трекинг, 3D-Raycasting и CLIP ReID.
-    Строго разделяет авторизованных подписчиков и сторонние объекты.
+    Строго разделяет авторизованных подписчиков и сторонние объекты на основе векторов признаков.
     """
     current_state = "IDLE"
     obj_results = obj_detector.process(frame)
@@ -94,25 +94,25 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
     raw_landmarks = hand_results.get("landmarks")
     landmarks = cast(List[List[float]], raw_landmarks if raw_landmarks is not None else [])
     
-    # 1. Безопасный цикл отрисовки кружек YOLO
+    # 1. Отрисовка bounding box'ов кружек YOLO
     for box in boxes:
         bx1, by1, bx2, by2, _, btrack_id = box
         cv2.rectangle(frame, (int(bx1), int(by1)), (int(bx2), int(by2)), (255, 100, 0), 2)
         cv2.putText(frame, f"ID: {btrack_id}", (int(bx1), int(by1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 100, 0), 1)
     
-    # 2. Отрисовка суставов кисти руки
+    # 2. Отрисовка суставов кисти руки MediaPipe
     if landmarks:
         for lm in landmarks:
             pt_x = int(lm[0] * config.video.width)
             pt_y = int(lm[1] * config.video.height)
             cv2.circle(frame, (pt_x, pt_y), 5, (0, 255, 0), -1)
             
-    # 3. Анализ пространственного триггера (Raycasting)
+    # 3. Анализ пространственного триггера (Raycasting + Z-глубина)
     is_triggered = spatial_analyzer.check_trigger(obj_results, hand_results)
     if is_triggered:
         target_cup_id = spatial_analyzer.get_last_triggered_id()
         
-        # БЕЗКОМПРОМИССНЫЙ СЕНИОР-ФИКС: Ищем кружку strictly по индексу 5 (track_id), а не по всему списку b!
+        # КРИТИЧЕСКИЙ СЕНИОР-ФИКС: Сравниваем ID строго с шестым элементом списка b (b[5]), где лежит track_id!
         target_box = next((b for b in boxes if len(b) > 5 and b[5] == target_cup_id), None)
         
         owner_name = "Unknown (Unsubscribed)"
@@ -125,7 +125,7 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
             crop = frame[max(0, int(y1)):min(config.video.height, int(y2)), max(0, int(x1)):min(config.video.width, int(x2))]
             
             if crop.size > 0:
-                # Извлекаем эмбеддинг CLIP и проводим верификацию подписки
+                # Извлекаем эмбеддинг через CLIP и принудительно сверяем с векторной базой данных
                 current_embedding = clip_encoder.extract(crop)
                 reid_result = vector_db.verify_embedding(current_embedding)
                 owner_name = reid_result["name"]
@@ -133,7 +133,7 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
         
         time_str = datetime.now().strftime("%H:%M:%S")
         
-        # Разделение логики: Доступ разрешен только верифицированным объектам
+        # 4. Разветвление бизнес-логики: Авторизованный доступ или Отказ
         if owner_name != "Unknown (Unsubscribed)":
             current_state = "GRANTED"
             trigger_count += 1
@@ -144,7 +144,6 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
             cx, cy = int((x1 + x2) / 2), int((y1 + y2) / 2)
             cv2.circle(frame, (cx, cy), int((x2 - x1) / 2) + 10, (0, 255, 0), 3)
             
-            # Запоминаем миллисекунду для FFmpeg дорожки успеха
             audio_events.append({"time_ms": current_ms, "type": "SUCCESS"})
         else:
             current_state = "DENIED"
@@ -155,12 +154,13 @@ def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector
             cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 3)
             cv2.line(frame, (int(x1), int(y2)), (int(x2), int(y1)), (0, 0, 255), 3)
             
-            # Запоминаем миллисекунду для FFmpeg дорожки провала
             audio_events.append({"time_ms": current_ms, "type": "DENIED"})
             
         event_db.save_event("Trigger_Fired", {"owner": owner_name, "score": reid_score})
         
     return current_state, trigger_count
+
+
 
 
 def main() -> None:
