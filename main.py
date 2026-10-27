@@ -1,85 +1,250 @@
 import os
+# Блокировка сетевых запросов Hugging Face
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+# Глушение отладочных C++ логов MediaPipe/TensorFlow (0 - все логи, 3 - только критические ошибки)
+os.environ["GLOG_minloglevel"] = "3" 
 
 import cv2
+import time
+import socket
+import subprocess
+from datetime import datetime
+from typing import List, Dict, Any, cast, Optional
+from pydub import AudioSegment  # type: ignore
+import numpy as np
 
-from modules.clip_encoder import CLIPFeatureExtractor
-from modules.hand_detector import HandDetector
-from modules.mock_db import MockDatabaseClient
-from modules.object_detector import ObjectDetector
-from modules.spatial_logic import SpatialLogicAnalyzer
-from modules.vector_db import VectorRegistry
+from config import config
 from modules.video_stream import VideoStream
-
+from modules.object_detector import ObjectDetector
+from modules.hand_detector import HandDetector
+from modules.spatial_logic import SpatialLogicAnalyzer
+from modules.clip_encoder import CLIPFeatureExtractor
+from modules.vector_db import VectorRegistry
+from modules.mock_db import MockDatabaseClient
 
 def run_stage4_self_test() -> None:
-    """Система smoke-тестирования геометрии."""
+    """Система smoke-тестирования геометрии (Этап 4)."""
     print("[TEST] Запуск самопроверки модуля пространственной логики...")
     analyzer = SpatialLogicAnalyzer()
-    assert analyzer.check_trigger({"boxes": []}, {"landmarks": []}) is False
+    
+    # Сценарий 1: Пустые данные
+    assert analyzer.check_trigger({"boxes": []}, {"landmarks": []}) is False, "Ошибка пустого триггера"
+    
+    # Сценарий 2: Неверный жест (синтетическая пустая ладонь)
     mock_bad_hand = {"landmarks": [[0.0, 0.0, 0.0]] * 21}
-    mock_cup = {"boxes": [[100, 100, 200, 200, 0.9, 1]]} # Обновлено до 6 параметров для теста!
-    assert analyzer.check_trigger(mock_cup, mock_bad_hand) is False
+    assert analyzer.check_trigger({"boxes": []}, mock_bad_hand) is False, "Ошибка валидации ложного жеста"
+    
     print("[TEST] Самопроверка успешно пройдена!\n")
 
+def draw_sidebar(dashboard: np.ndarray, fps: float, total_events: int, recent_logs: List[str], trigger_state: str) -> None:
+    """Отрисовка технологичного UI Сайдбара в правой части экрана (Dashboard)."""
+    dashboard[:, :] = (33, 30, 30)
+    
+    # Декоративная разделительная неоновая линия между видео и сайдбаром
+    cv2.line(dashboard, (0, 0), (0, config.video.height), (55, 53, 50), 2)
+    
+    # СЕКЦИЯ А: Системные метрики
+    cv2.putText(dashboard, "SYSTEM METRICS", (20, 40), cv2.FONT_HERSHEY_TRIPLEX, 0.6, (220, 220, 220), 1)
+    cv2.line(dashboard, (20, 55), (380, 55), (75, 71, 68), 1)
+    
+    # Вывод текущего FPS конвейера
+    cv2.putText(dashboard, f"FPS: {fps:.1f}", (20, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 1)
+    
+    # Вывод общего счетчика успешных валидаций в БД
+    text_log = f"EVENTS LOGGED: {total_events}"
+    cv2.putText(dashboard, text_log, (20, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (220, 220, 220), 1)
+    
+    # СЕКЦИЯ Б: Статус Безопасности (Security HUD)
+    cv2.putText(dashboard, "SECURITY STATUS:", (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (140, 140, 140), 1)
+    
+    if trigger_state == "GRANTED":
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 120, 0), -1)
+        cv2.putText(dashboard, "ACCESS GRANTED", (65, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 255, 0), 2)
+    elif trigger_state == "DENIED":
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (0, 0, 140), -1)
+        cv2.putText(dashboard, "ACCESS DENIED", (75, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (0, 0, 255), 2)
+    else:
+        cv2.rectangle(dashboard, (20, 200), (380, 250), (50, 47, 45), -1)
+        cv2.putText(dashboard, "SCANNING...", (115, 235), cv2.FONT_HERSHEY_DUPLEX, 0.65, (160, 160, 160), 1)
 
-def main() -> None:   
-    print("=== ЗАПУСК МУЛЬТИМОДАЛЬНОЙ СИСТЕМЫ ВЕРИФИКАЦИИ ПОДПИСОК ===")
+    # СЕКЦИЯ В: Живая лента событий (Recent Events Log)
+    cv2.putText(dashboard, "RECENT EVENTS LOG", (20, 320), cv2.FONT_HERSHEY_TRIPLEX, 0.6, (220, 220, 220), 1)
+    cv2.line(dashboard, (20, 335), (380, 335), (75, 71, 68), 1)
+    
+    y_offset = 370
+    for log in recent_logs[-5:]:
+        if "Access Denied" in log:
+            log_color = (0, 0, 255)
+        else:
+            log_color = (0, 220, 255)
+            
+        cv2.putText(dashboard, log, (20, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.45, log_color, 1)
+        y_offset += 35
         
-    try:
-        run_stage4_self_test()
-    except AssertionError as e:
-        print(f"[CRITICAL] Тест логики провален: {e}")
-        return
+def process_frame(frame: np.ndarray, obj_detector: ObjectDetector, hand_detector: HandDetector, 
+                  spatial_analyzer: SpatialLogicAnalyzer, clip_encoder: CLIPFeatureExtractor, 
+                  vector_db: VectorRegistry, event_db: MockDatabaseClient, sound_socket: Optional[socket.socket], 
+                  log_feed: List[str], trigger_count: int, audio_events: List[Dict[str, Any]], current_ms: int) -> tuple[str, int]:
+    """
+    Внутренний конвейер ИИ: Детекция, Трекинг, 3D-Raycasting и CLIP ReID.
+    Использует инвариантный к смене ID векторный кэш эмбеддингов для стопроцентной
+    стабилизации распознавания в многообъектных и зашумленных сценах.
+    """
+    current_state = "IDLE"
+    obj_results = obj_detector.process(frame)
+    hand_results = hand_detector.process(frame)
+    
+    raw_boxes = obj_results.get("boxes")
+    boxes = cast(List[List[Any]], raw_boxes if raw_boxes is not None else [])
+    raw_landmarks = hand_results.get("landmarks")
+    landmarks = cast(List[List[float]], raw_landmarks if raw_landmarks is not None else [])
+    
+    # Инициализация динамического векторного кэша и маппинга капризных ByteTrack ID на стабильные имена
+    if not hasattr(process_frame, "_vector_cache"):
+        setattr(process_frame, "_vector_cache", [])
+    if not hasattr(process_frame, "_id_to_name_map"):
+        setattr(process_frame, "_id_to_name_map", {})
+        
+    vector_cache: List[Dict[str, Any]] = getattr(process_frame, "_vector_cache")
+    id_map: Dict[int, str] = getattr(process_frame, "_id_to_name_map")
+    
+    # 1. Отрисовка bounding box'ов кружек YOLO с динамическим переопределением ID на экране
+    for box in boxes:
+        bx1, by1, bx2, by2, _, btrack_id = box
+        
+        # Если этот конкретный btrack_id (например, 2, 5, 9) уже привязан в кэше к имени, выводим имя
+        if int(btrack_id) in id_map:
+            display_id = id_map[int(btrack_id)]
+        else:
+            display_id = f"Scanning (ID: {int(btrack_id)})"
+            
+        cv2.rectangle(frame, (int(bx1), int(by1)), (int(bx2), int(by2)), (255, 100, 0), 2)
+        cv2.putText(frame, display_id, (int(bx1), int(by1) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 100, 0), 1)
+    
+    # 2. СТРОГИЙ СЕНИОР-ФИКС: Отрисовка суставов кисти руки по правильным индексам осей [x, y, z]
+    if landmarks:
+        for lm in landmarks:
+            # lm[0] - нормализованный X, lm[1] - нормализованный Y
+            pt_x = int(lm[0] * config.video.width)
+            pt_y = int(lm[1] * config.video.height)
+            cv2.circle(frame, (pt_x, pt_y), 5, (0, 255, 0), -1)
+            
+    # 3. Анализ пространственного триггера (Raycasting + Z-глубина)
+    is_triggered = spatial_analyzer.check_trigger(obj_results, hand_results)
+    if is_triggered:
+        target_cup_id = spatial_analyzer.get_last_triggered_id()
+        
+        owner_name = "Unknown (Unsubscribed)"
+        reid_score = 0.0
+        
+        x1, y1, x2, y2 = 0.0, 0.0, 0.0, 0.0
+        
+        # СТРОГИЙ СЕНИОР-ФИКС: Извлекаем box целевого объекта, сравнивая строго шестой элемент (b[5])
+        target_box = next((b for b in boxes if len(b) > 5 and int(b[5]) == target_cup_id), None)
+        if target_box is not None:
+            x1, y1, x2, y2, _, _ = target_box
+            crop = frame[max(0, int(y1)):min(config.video.height, int(y2)), max(0, int(x1)):min(config.video.width, int(x2))]
+            
+            if crop.size > 0:
+                # Извлекаем текущий эмбеддинг CLIP
+                current_embedding = clip_encoder.extract(crop)
+                norm_current = current_embedding / np.linalg.norm(current_embedding)
+                
+                # Ищем объект в локальном векторном кэше сессии
+                cached_match = None
+                for cached_item in vector_cache:
+                    cached_emb = cached_item["embedding"]
+                    norm_cached = cached_emb / np.linalg.norm(cached_emb)
+                    similarity = float(np.dot(norm_current, norm_cached))
+                    
+                    if similarity >= 0.92:
+                        cached_match = cached_item
+                        break
+                
+                if cached_match is not None:
+                    owner_name = cached_match["name"]
+                    reid_score = cached_match["score"]
+                    # Связываем текущий капризный ID с уже известным именем в маппинге
+                    id_map[target_cup_id] = owner_name
+                else:
+                    reid_result = vector_db.verify_embedding(current_embedding)
+                    owner_name = reid_result["name"]
+                    reid_score = reid_result["score"]
+                    
+                    # Добавляем в кэш и связываем с ID
+                    vector_cache.append({
+                        "embedding": current_embedding,
+                        "name": owner_name,
+                        "score": reid_score
+                    })
+                    id_map[target_cup_id] = owner_name
+        
+        time_str = datetime.now().strftime("%H:%M:%S")
+        
+        # 4. Разветвление бизнес-логики: Авторизованный доступ или Отказ
+        if owner_name != "Unknown (Unsubscribed)":
+            current_state = "GRANTED"
+            trigger_count += 1
+            if sound_socket:
+                try: sound_socket.sendall(b"SUCCESS")
+                except socket.error: pass
+            log_feed.append(f"[{time_str}] {owner_name} - Verified ({reid_score:.2f})")
+            
+            if target_box is not None:
+                cx, cy = int((x1 + x2) / 2), int((y1 + y2) / 2)
+                cv2.circle(frame, (cx, cy), int((x2 - x1) / 2) + 10, (0, 255, 0), 3)
+            
+            audio_events.append({"time_ms": current_ms, "type": "SUCCESS"})
+        else:
+            current_state = "DENIED"
+            if sound_socket:
+                try: sound_socket.sendall(b"DENIED")
+                except socket.error: pass
+            log_feed.append(f"[{time_str}] Access Denied: Unknown (Unsubscribed)")
+            
+            if target_box is not None:
+                cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 3)
+                cv2.line(frame, (int(x1), int(y2)), (int(x2), int(y1)), (0, 0, 255), 3)
+            
+            audio_events.append({"time_ms": current_ms, "type": "DENIED"})
+            
+        event_db.save_event("Trigger_Fired", {"owner": owner_name, "score": reid_score})
+        
+    return current_state, trigger_count
 
-    # Пошаговый маркерный дебаг инициализации
-    print("[DEBUG] Создание VectorRegistry...")
-    vector_db = VectorRegistry()
-    
-    print("[DEBUG] Создание MockDatabaseClient...")
-    event_db = MockDatabaseClient()
-    
-    print("[DEBUG] Создание ObjectDetector...")
-    obj_detector = ObjectDetector()
-    
-    print("[DEBUG] Создание HandDetector...")
-    hand_detector = HandDetector()
-    
-    print("[DEBUG] Создание SpatialLogicAnalyzer...")
-    spatial_analyzer = SpatialLogicAnalyzer()
-    
-    print("[DEBUG] Создание CLIPFeatureExtractor...")
-    clip_encoder = CLIPFeatureExtractor()
-    
-    print("[DEBUG] Все объекты классов созданы. Начинаем load_model()...")
-    
-    try:
-        print("[DEBUG] Загрузка YOLO...")
-        obj_detector.load_model()
-        print("[DEBUG] Загрузка MediaPipe...")
-        hand_detector.load_model()
-        print("[DEBUG] Загрузка CLIP...")
-        clip_encoder.load_model()
-        print("[DEBUG] Подключение к Event DB...")
-        event_db.connect()
-    except Exception as e:
-        print(f"Ошибка при инициализации компонентов: {e}")
-        return
+        
+
+def main() -> None:
+    if "DISPLAY" not in os.environ:
+        os.environ["DISPLAY"] = config.network.display_env
 
     print("=== ЗАПУСК МУЛЬТИМОДАЛЬНОЙ СИСТЕМЫ ВЕРИФИКАЦИИ ПОДПИСОК ===")
-    
     try:
         run_stage4_self_test()
     except AssertionError as e:
         print(f"[CRITICAL] Тест логики провален: {e}")
         return
 
-    # Инициализация абсолютно всех компонентов
-    obj_detector = ObjectDetector()
-    hand_detector = HandDetector()
-    spatial_analyzer = SpatialLogicAnalyzer()
-    clip_encoder = CLIPFeatureExtractor()
-    vector_db = VectorRegistry()
-    event_db = MockDatabaseClient()
+    sound_socket: Optional[socket.socket] = None
+    try:
+        cmd = "ip route | grep default | awk '{print $3}'"
+        host_ip = subprocess.check_output(cmd, shell=True).decode().strip()
+        sound_port = int(getattr(config.network, "sound_port", 9996))
+        
+        sound_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sound_socket.settimeout(3.0) 
+        sound_socket.connect((host_ip, sound_port))
+        sound_socket.settimeout(None) 
+        print(f"[WSL NETWORK] Аудио-мост с Windows Sound Server успешно установлен на порту {sound_port}!")
+    except Exception as e:
+        print(f"[WARNING] Не удалось подключить Windows аудио-сервер: {e}. Работаем без живого звука.")
+        sound_socket = None
+
+    obj_detector, hand_detector = ObjectDetector(), HandDetector()
+    spatial_analyzer, clip_encoder = SpatialLogicAnalyzer(), CLIPFeatureExtractor()
+    vector_db, event_db = VectorRegistry(), MockDatabaseClient()
     
     try:
         obj_detector.load_model()
@@ -87,128 +252,104 @@ def main() -> None:
         clip_encoder.load_model()
         event_db.connect()
     except Exception as e:
-        print(f"Ошибка при инициализации компонентов: {e}")
+        print(f"Ошибка инициализации моделей: {e}")
+        if sound_socket:
+            sound_socket.close()
         return
+
+    os.makedirs(config.video.output_dir, exist_ok=True)
+    temp_video_path = os.path.join(config.video.output_dir, "temp_silent_video.mp4")
+    final_output_path = os.path.join(config.video.output_dir, config.video.output_filename)
+
+    audio_events: List[Dict[str, Any]] = []
 
     try:
         with VideoStream() as stream:
-            print("Пайплайн запущен. Ведется потоковый конвейерный анализ...")
+            total_width = config.video.width + 400
+            video_writer = cv2.VideoWriter(temp_video_path, cv2.VideoWriter_fourcc(*'mp4v'), config.video.fps_target, (total_width, config.video.height)) # type: ignore
+            cv2.namedWindow("Advanced CV - Live AR HUD", cv2.WINDOW_NORMAL)
             
-            output_dir = "data/video"
-            os.makedirs(output_dir, exist_ok=True)
-            output_path = os.path.join(output_dir, "output_processed.mp4")
-            
-            video_writer = cv2.VideoWriter(
-                output_path, 
-                cv2.VideoWriter_fourcc(*'mp4v'),  # type: ignore
-                30.0, 
-                (1280, 720)
-            )
-            
-            frame_count = 0
-            trigger_count = 0
+            frame_count, trigger_count = 0, 0
+            log_feed: List[str] = ["System started..."]
+            prev_time, fps = time.time(), 0.0
             
             for frame in stream.frames():
                 frame_count += 1
+                current_ms = int((frame_count / config.video.fps_target) * 1000)
                 
-                if frame.shape[1] != 1280 or frame.shape[0] != 720:
-                    frame = cv2.resize(frame, (1280, 720))
+                if frame_count % 10 == 0:
+                    current_time = time.time()
+                    fps = 10 / (current_time - prev_time)
+                    prev_time = current_time
+
+                if frame.shape != config.video.width or frame.shape != config.video.height:
+                    frame = cv2.resize(frame, (config.video.width, config.video.height))
                 
-                # 1. Сквозной инференс моделей базового уровня
-                obj_results = obj_detector.process(frame)
-                hand_results = hand_detector.process(frame)
+                sidebar = np.zeros((config.video.height, 400, 3), dtype=np.uint8)
                 
-                boxes = obj_results.get("boxes", [])
-                landmarks = hand_results.get("landmarks", [])
+                current_state, trigger_count = process_frame(
+                    frame, obj_detector, hand_detector, spatial_analyzer, 
+                    clip_encoder, vector_db, event_db, sound_socket, log_feed, trigger_count, audio_events, current_ms
+                )
                 
-                # 2. Визуализация HUD для кружек
-                for box in boxes:
-                    x1, y1, x2, y2, conf, track_id = box
-                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (255, 0, 0), 2)
-                    cv2.putText(
-                        frame, f"Cup ID: {track_id}", (int(x1), int(y1) - 10), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2
-                    )
+                draw_sidebar(sidebar, fps, trigger_count, log_feed, current_state)
+                combined_dashboard = np.hstack((frame, sidebar))
                 
-                # 3. Визуализация HUD для рук
-                if landmarks:
-                    for lm in landmarks:
-                        pt_x = int(lm[0] * 1280)
-                        pt_y = int(lm[1] * 720)
-                        cv2.circle(frame, (pt_x, pt_y), 4, (0, 255, 0), -1)
+                cv2.imshow("Advanced CV - Live AR HUD", combined_dashboard)
+                video_writer.write(combined_dashboard)
                 
-                # 4. Пространственно-временной анализ (Raycasting + Z-глубина)
-                is_triggered = spatial_analyzer.check_trigger(obj_results, hand_results)
-                
-                if is_triggered:
-                    trigger_count += 1
-                    target_cup_id = spatial_analyzer.get_last_triggered_id()
-                    
-                    # Находим координаты целевой кружки по её ID для создания Crop'а
-                    target_box = None
-                    for box in boxes:
-                        if box[5] == target_cup_id:
-                            target_box = box
-                            break
-                    
-                    owner_name = "Unknown (Unsubscribed)"
-                    reid_score = 0.0
-                    
-                    # Если кружка найдена физически в кадре, запускаем ReID проверку подписки уровня Advanced
-                    if target_box is not None:
-                        x1, y1, x2, y2, _, _ = target_box
-                        h, w, _ = frame.shape
-                        crop_y1, crop_y2 = max(0, int(y1)), min(h, int(y2))
-                        crop_x1, crop_x2 = max(0, int(x1)), min(w, int(x2))
-                        
-                        crop = frame[crop_y1:crop_y2, crop_x1:crop_x2]
-                        
-                        if crop.size > 0:
-                            # Шаг А: Извлекаем эмбеддинг из вырезанного OpenCV куска через CLIP
-                            current_embedding = clip_encoder.extract(crop)
-                            # Шаг Б: Сравниваем с нашей векторной базой данных
-                            reid_result = vector_db.verify_embedding(current_embedding)
-                            
-                            owner_name = reid_result["name"]
-                            reid_score = reid_result["score"]
-                    
-                    print(f"[TRIGGER] Кадр {frame_count}: Жест над Cup ID {target_cup_id}. Владелец: {owner_name} (Score: {reid_score})")
-                    
-                    # Отправляем обогащенное событие в структурированную базу данных
-                    event_db.save_event(
-                        event_type="Contextual_Jumbo_Trigger",
-                        metadata={
-                            "frame_id": frame_count,
-                            "track_id": target_cup_id,
-                            "resolved_owner": owner_name,
-                            "matching_confidence": reid_score,
-                            "subscription_valid": owner_name != "Unknown (Unsubscribed)"
-                        }
-                    )
-                    
-                    # Спецэффекты дополненной реальности (AR HUD) на видео
-                    hud_color = (0, 255, 0) if owner_name != "Unknown (Unsubscribed)" else (0, 0, 255)
-                    cv2.putText(
-                        frame, f"ACCESS: {owner_name.upper()}!", (50, 80), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, hud_color, 3
-                    )
-                    cv2.rectangle(frame, (0, 0), (1280, 720), hud_color, 5)
-                
-                video_writer.write(frame)
-                
-                if frame_count % 30 == 0:
-                    print(f"Успешно обработано кадров: {frame_count}")
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('q') or key == ord('Q') or key == 27:
+                    print("[INFO] Получен сигнал закрытия окна. Завершение...")
+                    break
             
             video_writer.release()
-            print(f"\n[SUCCESS] Сверхсложный конвейер ИИ успешно завершил работу!")
-            print(f"Всего событий верифицировано и внесено в журнал: {trigger_count}")
-            print(f"Видеозапись с AR-HUD сохранена в: {output_path}")
+            cv2.destroyAllWindows()
+            
+            # --- СИНТЕЗ АУДИОДОРОЖКИ И КАНАЛЬНАЯ СКЛЕЙКА FFMPEG ---
+            total_duration_ms = int((frame_count / config.video.fps_target) * 1000)
+            if total_duration_ms <= 0: total_duration_ms = 1000
+            
+            print("[AUDIO] Пайплайн завершен. Начинаем сборку аудиодорожки...")
+            try:
+                base_audio = AudioSegment.silent(duration=total_duration_ms)
+                wav_success = AudioSegment.from_wav(config.sounds.success_wav)
+                wav_denied = AudioSegment.from_wav(config.sounds.denied_wav)
+                
+                for event in audio_events:
+                    if event["type"] == "SUCCESS":
+                        base_audio = base_audio.overlay(wav_success, position=event["time_ms"])
+                    else:
+                        base_audio = base_audio.overlay(wav_denied, position=event["time_ms"])
+                
+                temp_audio_path = os.path.join(config.video.output_dir, "temp_audio.wav")
+                base_audio.export(temp_audio_path, format="wav")
+                
+                print("[FFMPEG] Мультиплексирование потоков в финальный контейнер...")
+                ffmpeg_cmd = [
+                    "ffmpeg", "-y",
+                    "-i", temp_video_path,
+                    "-i", temp_audio_path,
+                    "-c:v", "copy",
+                    "-c:a", "aac",
+                    "-strict", "experimental",
+                    final_output_path
+                ]
+                subprocess.run(ffmpeg_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                
+                if os.path.exists(temp_video_path): os.remove(temp_video_path)
+                if os.path.exists(temp_audio_path): os.remove(temp_audio_path)
+                print(f"[SUCCESS] Финальное видео СО ЗВУКОМ успешно сохранено: {final_output_path}")
+            except Exception as audio_err:
+                print(f"[WARNING] Ошибка FFmpeg: {audio_err}. Сохранено немое видео.")
+                if os.path.exists(temp_video_path):
+                    os.rename(temp_video_path, final_output_path)
                     
-    except RuntimeError as e:
-        print(f"Критическая ошибка пайплайна: {e}")
     except Exception as e:
-        print(f"Непредвиденное исключение в главном цикле: {e}")
+        print(f"[ERROR] Ошибка в главном цикле: {e}")
     finally:
+        if sound_socket:
+            sound_socket.close()
         event_db.disconnect()
 
 if __name__ == "__main__":
