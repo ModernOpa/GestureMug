@@ -319,3 +319,133 @@
 {"timestamp": "2026-10-24T13:42:24.148547", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8571}}
 {"timestamp": "2026-10-24T13:42:25.316178", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8619}}
 {"timestamp": "2026-10-24T13:42:33.163162", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8356}}
+{"timestamp": "2026-10-24T14:06:52.434392", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:06:52.923696", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:06:53.359991", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:06:53.939223", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:06:58.754623", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:08.707735", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:09.204296", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:09.685904", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:10.083735", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:11.111001", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:11.695590", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:12.955696", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:14.345763", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:07:22.621341", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.0}}
+{"timestamp": "2026-10-24T14:21:07.226654", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8226}}
+{"timestamp": "2026-10-24T14:21:07.689884", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8121}}
+{"timestamp": "2026-10-24T14:21:08.214702", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8263}}
+{"timestamp": "2026-10-24T14:21:08.725833", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.841}}
+{"timestamp": "2026-10-24T14:21:13.788294", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.802}}
+{"timestamp": "2026-10-24T14:21:24.705307", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8547}}
+{"timestamp": "2026-10-24T14:21:25.149035", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8337}}
+{"timestamp": "2026-10-24T14:21:25.668119", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8478}}
+{"timestamp": "2026-10-24T14:21:26.130455", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.854}}
+{"timestamp": "2026-10-24T14:21:27.175435", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8518}}
+{"timestamp": "2026-10-24T14:21:27.569494", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7821}}
+{"timestamp": "2026-10-24T14:21:28.400876", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8571}}
+{"timestamp": "2026-10-24T14:21:29.605258", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8619}}
+{"timestamp": "2026-10-24T14:21:36.222633", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8356}}
+{"timestamp": "2026-10-24T14:28:23.582226", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8226}}
+{"timestamp": "2026-10-24T14:28:24.089383", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8121}}
+{"timestamp": "2026-10-24T14:28:24.626695", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8263}}
+{"timestamp": "2026-10-24T14:28:25.148458", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.841}}
+{"timestamp": "2026-10-24T14:28:30.029584", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.802}}
+{"timestamp": "2026-10-24T14:28:41.356536", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8547}}
+{"timestamp": "2026-10-24T14:28:41.885049", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8337}}
+{"timestamp": "2026-10-24T14:28:42.392785", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8478}}
+{"timestamp": "2026-10-24T14:28:42.920596", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.854}}
+{"timestamp": "2026-10-24T14:28:44.111937", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8518}}
+{"timestamp": "2026-10-24T14:28:44.561174", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7821}}
+{"timestamp": "2026-10-24T14:28:45.596635", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8571}}
+{"timestamp": "2026-10-24T14:28:46.886925", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8619}}
+{"timestamp": "2026-10-24T14:28:54.190877", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8356}}
+{"timestamp": "2026-10-24T14:37:18.139960", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8226}}
+{"timestamp": "2026-10-24T14:37:18.534496", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8121}}
+{"timestamp": "2026-10-24T14:37:18.951914", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8263}}
+{"timestamp": "2026-10-24T14:37:19.413546", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.841}}
+{"timestamp": "2026-10-24T14:37:25.314805", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.802}}
+{"timestamp": "2026-10-24T14:37:35.109604", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8547}}
+{"timestamp": "2026-10-24T14:37:35.663172", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8337}}
+{"timestamp": "2026-10-24T14:37:36.163938", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8478}}
+{"timestamp": "2026-10-24T14:37:36.590391", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.854}}
+{"timestamp": "2026-10-24T14:37:37.593610", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8518}}
+{"timestamp": "2026-10-24T14:37:37.996125", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7821}}
+{"timestamp": "2026-10-24T14:37:39.039177", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8571}}
+{"timestamp": "2026-10-24T14:37:40.481665", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8619}}
+{"timestamp": "2026-10-24T14:37:48.015812", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8356}}
+{"timestamp": "2026-10-24T14:42:17.308608", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8645}}
+{"timestamp": "2026-10-24T14:42:17.825929", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8382}}
+{"timestamp": "2026-10-24T14:42:19.403253", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8064}}
+{"timestamp": "2026-10-24T14:42:19.923021", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8008}}
+{"timestamp": "2026-10-24T14:42:22.560209", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8415}}
+{"timestamp": "2026-10-24T14:42:25.571069", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8214}}
+{"timestamp": "2026-10-24T14:42:27.872682", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8527}}
+{"timestamp": "2026-10-24T14:42:29.954101", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8483}}
+{"timestamp": "2026-10-24T14:49:16.670057", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8645}}
+{"timestamp": "2026-10-24T14:49:17.146277", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8382}}
+{"timestamp": "2026-10-24T14:49:18.452481", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8064}}
+{"timestamp": "2026-10-24T14:49:18.877273", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8008}}
+{"timestamp": "2026-10-24T14:49:20.350791", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8415}}
+{"timestamp": "2026-10-24T14:49:23.501371", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8214}}
+{"timestamp": "2026-10-24T14:49:26.519570", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8527}}
+{"timestamp": "2026-10-24T14:49:29.060842", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8483}}
+{"timestamp": "2026-10-24T15:00:16.311344", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8645}}
+{"timestamp": "2026-10-24T15:00:16.829666", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8382}}
+{"timestamp": "2026-10-24T15:00:18.293917", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8064}}
+{"timestamp": "2026-10-24T15:00:18.783011", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8008}}
+{"timestamp": "2026-10-24T15:00:20.323884", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8415}}
+{"timestamp": "2026-10-24T15:00:22.942404", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8214}}
+{"timestamp": "2026-10-24T15:00:25.355906", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8527}}
+{"timestamp": "2026-10-24T15:00:27.369644", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8483}}
+{"timestamp": "2026-10-24T15:04:08.854400", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.771}}
+{"timestamp": "2026-10-24T15:04:15.382507", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7576}}
+{"timestamp": "2026-10-24T15:04:15.850868", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7816}}
+{"timestamp": "2026-10-24T15:04:16.401704", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7896}}
+{"timestamp": "2026-10-24T15:04:16.905566", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7305}}
+{"timestamp": "2026-10-24T15:05:20.508192", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6906}}
+{"timestamp": "2026-10-24T15:05:20.893938", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7413}}
+{"timestamp": "2026-10-24T15:05:22.024644", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7266}}
+{"timestamp": "2026-10-24T15:05:22.394287", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7272}}
+{"timestamp": "2026-10-24T15:05:23.325393", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7067}}
+{"timestamp": "2026-10-24T15:23:07.670985", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7111}}
+{"timestamp": "2026-10-24T15:23:08.082408", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7698}}
+{"timestamp": "2026-10-24T15:23:08.877773", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7819}}
+{"timestamp": "2026-10-24T15:23:09.272549", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.779}}
+{"timestamp": "2026-10-24T15:23:11.354396", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.718}}
+{"timestamp": "2026-10-24T15:30:57.338389", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7419}}
+{"timestamp": "2026-10-24T15:30:57.985540", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7195}}
+{"timestamp": "2026-10-24T15:31:00.017581", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.738}}
+{"timestamp": "2026-10-24T15:31:00.461137", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7412}}
+{"timestamp": "2026-10-24T15:31:00.933541", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7158}}
+{"timestamp": "2026-10-24T15:35:13.599947", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8392}}
+{"timestamp": "2026-10-24T15:35:14.078515", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8179}}
+{"timestamp": "2026-10-24T15:35:14.519924", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8583}}
+{"timestamp": "2026-10-24T15:35:16.494997", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8509}}
+{"timestamp": "2026-10-24T15:35:22.411736", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7553}}
+{"timestamp": "2026-10-24T15:35:24.028943", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8331}}
+{"timestamp": "2026-10-24T15:44:35.396721", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T15:44:35.925221", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6451}}
+{"timestamp": "2026-10-24T15:44:36.434271", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6575}}
+{"timestamp": "2026-10-24T15:44:40.310554", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.7749}}
+{"timestamp": "2026-10-24T15:44:46.617191", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T15:44:54.181545", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8226}}
+{"timestamp": "2026-10-24T15:44:54.700623", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8669}}
+{"timestamp": "2026-10-24T15:44:55.214750", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.763}}
+{"timestamp": "2026-10-24T16:00:47.463318", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T16:00:47.919449", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6451}}
+{"timestamp": "2026-10-24T16:00:48.339621", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6451}}
+{"timestamp": "2026-10-24T16:00:52.284215", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T16:00:58.237317", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T16:01:06.134780", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T16:01:06.575776", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T16:01:07.801451", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T18:06:42.873511", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T18:06:43.359673", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6451}}
+{"timestamp": "2026-10-24T18:06:43.841296", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.6451}}
+{"timestamp": "2026-10-24T18:06:47.801192", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}
+{"timestamp": "2026-10-24T18:06:52.992080", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T18:06:59.996990", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.8226}}
+{"timestamp": "2026-10-24T18:07:00.390940", "event_type": "Trigger_Fired", "metadata": {"owner": "GR_Mug", "score": 0.862}}
+{"timestamp": "2026-10-24T18:07:00.784060", "event_type": "Trigger_Fired", "metadata": {"owner": "Unknown (Unsubscribed)", "score": 0.7374}}

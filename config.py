@@ -5,7 +5,7 @@ from typing import Tuple
 
 @dataclass(frozen=True)
 class VideoConfig:
-    source: str | int = "data/video/video5.mp4"  # 0 для веб-камеры, или путь к 'video.mp4'
+    source: str | int = "data/video/video15.mp4"  # 0 для веб-камеры, или путь к 'video.mp4'
     width: int = 1280
     height: int = 720
     fps_target: int = 30
